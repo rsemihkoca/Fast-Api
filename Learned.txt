@@ -1,0 +1,25 @@
+Environment çalışması için activate.bat'ı terminalden çalıştırman gerekiyor
+Interpreter içinse dosya içindeki python.exe dosyasını seçtir select interpreter'den
+
+-VIRTUAL ENVIRONMENT YARATMA(PIPENV VE VİRTUALENV EN İYİSİ)
+
+pip install virtualenv
+
+virtualenv deneme
+
+source deneme/Scripts/activate
+
+python -m pip install -r requirements.txt
+
+
+
+uvicorn main:app --reload
+Burada --reload senin her değişiklik yaptığında açıp kapamanı engeller
+
+@post
+payload: dict = Body(...)
+Body ile gelen veriyi tut, dict'e çevir bunu payload'ta tut
+** payload tipi dict olarak alıyor 
+
+created_post: Post = Body(...)
+Post'u pydantic'ten tanımladın ve dedin ki title,content str olsun VALIDATION
