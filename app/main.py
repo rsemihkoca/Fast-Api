@@ -117,14 +117,18 @@ def delete_post(id: int, status_code = status.HTTP_204_NO_CONTENT):
 
     return {"data": f"Post with id {id} is deleted"}
 
-# #Update Post
-# @app.put("/posts/{id}", status_code = status.HTTP_202_ACCEPTED)
-# def update_post(id: int, post: Post):
-#     post_dict = post.dict()
-#     post_dict["id"] = id
-#     post_to_update = find_post(id)
-#     if not post_to_update:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} not found")
-#     my_posts.remove(post_to_update)
-#     my_posts.append(post_dict)
-#     return {"data": post_dict}
+#Update Post
+@app.put("/posts/{id}", status_code = status.HTTP_202_ACCEPTED)
+def update_post(id: int, post: Post):
+
+    if not check_if_table_exists():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, content="Table does not exist")  # type: ignore
+
+    cursor.execute("""UPDATE posts SET title = %s, content = %s, published =%s WHERE id = %s RETURNING *""", (post.title, post.content, post.published, str(id),))
+    posts = cursor.fetchone()
+
+    if not posts:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} not found")
+
+    connection.commit()
+    return {"data": posts}
