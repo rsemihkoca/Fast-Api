@@ -64,7 +64,7 @@ def get_posts():
     if not check_if_table_exists():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, content="Table does not exist")
     
-    cursor.execute("SELECT * FROM posts")
+    cursor.execute("""SELECT * FROM posts""")
     posts = cursor.fetchall()
     return {"data": posts}
 
@@ -74,7 +74,7 @@ async def create_posts(post: Post = Body(...)):
     if not check_if_table_exists():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, content="Table does not exist")
 
-    cursor.execute("INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING * ", (post.title, post.content, post.published))
+    cursor.execute("""INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING * """, (post.title, post.content, post.published))
     posts = cursor.fetchone()
 
     connection.commit()
@@ -93,7 +93,7 @@ async def get_post(id: int):
     if not check_if_table_exists():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, content="Table does not exist")  # type: ignore
 
-    cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id)))
+    cursor.execute("""SELECT * FROM posts WHERE id = %s""", (str(id),)) # neden , var bilmiyorum
     posts = cursor.fetchone()
 
     if not posts:
@@ -102,13 +102,20 @@ async def get_post(id: int):
     return {"data": posts}
 
 #Delete Post
-# @app.delete("/posts/{id}")
-# def delete_post(id: int, status_code = status.HTTP_204_NO_CONTENT):
-#     post = find_post(id)
-#     if not post: #if post == None
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} not found")
-#     my_posts.remove(post)
-#     return {"data": f"Post with id {id} is deleted"}
+@app.delete("/posts/{id}")
+def delete_post(id: int, status_code = status.HTTP_204_NO_CONTENT):
+
+    if not check_if_table_exists():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, content="Table does not exist")  # type: ignore
+
+    cursor.execute("""DELETE FROM posts WHERE id = %s RETURNING * """, (str(id),)) # neden , var bilmiyorum
+    posts = cursor.fetchone()
+    if not posts: #if post == None
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} not found")
+    
+    connection.commit()
+
+    return {"data": f"Post with id {id} is deleted"}
 
 # #Update Post
 # @app.put("/posts/{id}", status_code = status.HTTP_202_ACCEPTED)
